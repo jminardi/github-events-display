@@ -1,0 +1,42 @@
+local old_payload = "";
+
+function readSerial() {
+ 
+    local result = hardware.uart57.read();
+    if (result == 99) {  //"c" in ASCII
+        server.log("chunk - " + result);
+        server.log("calling sendNextChunk()")
+        sendNextChunk();
+    } else if (result == 108) { //"l" in ASCII
+        server.log("load - " + result);
+        server.log("sending req to agent")
+        agent.send("req", result);
+    }
+    imp.wakeup(0.1, readSerial);
+}
+
+function sendNextChunk() {
+    server.log("sendNextChunk() called");
+    local chunk_size = 60;
+    local to_send = "";
+    if (old_payload.len() < chunk_size) {
+        to_send = old_payload;
+        old_payload = "";
+    } else {
+        to_send = old_payload.slice(0, chunk_size);
+        old_payload = old_payload.slice(chunk_size);
+    }
+    server.log("to_send: " + to_send)
+    hardware.uart57.write(to_send);
+}
+
+function saveGithub(payload) {
+  server.log("payload: " + payload);
+  old_payload = "^" + payload + "$";
+}
+ 
+agent.on("res", saveGithub);
+
+hardware.uart57.configure(9600, 8, PARITY_NONE, 1, NO_CTSRTS);
+server.log("starting...");
+readSerial();
