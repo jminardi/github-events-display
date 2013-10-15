@@ -1,0 +1,47 @@
+// Basic wrapper to create an execute an HTTP GET
+function HttpGetWrapper (url, headers) {
+  local request = http.get(url, headers);
+  local response = request.sendsync();
+  return response;
+}
+
+function pollGithub(param) {
+    local url = "https://api.github.com/orgs/enthought/events?access_token=3f3adb05821dad92a22d39b9398e0894af438406";
+    local result = HttpGetWrapper(url, {});
+    local body = result["body"];
+    local obj = http.jsondecode(body);
+    //server.log(param);
+    local to_send = "";
+    foreach(event in obj) {
+        local actor = event["actor"]["login"];
+        local type = event["type"];
+        type = ::eventMap[type];
+        to_send += actor + "." + type + ",";
+    }
+    device.send("res", to_send)
+}
+
+device.on("req", pollGithub)
+
+::eventMap <- {
+    "CommitCommentEvent": "a"
+    "CreateEvent": "b"
+    "DeleteEvent": "c"
+    "DownloadEvent": "d"
+    "FollowEvent": "e"
+    "ForkEvent": "f"
+    "ForkApplyEvent": "g"
+    "GistEvent": "h"
+    "GollumEvent": "i"
+    "IssueCommentEvent": "j"
+    "IssuesEvent": "k"
+    "MemberEvent": "l"
+    "PublicEvent": "m"
+    "PullRequestEvent": "n"
+    "PullRequestReviewCommentEvent": "o"
+    "PushEvent": "p"
+    "ReleaseEvent": "q"
+    "StatusEvent": "r"
+    "TeamAddEvent": "s"
+    "WatchEvent": "t"
+}
