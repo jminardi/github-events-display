@@ -1,7 +1,7 @@
 github-events-display
 =====================
 
-![LED Matrix](http://jack.minardi.org/static/images/project-banners/gh-display.png)
+![LED Matrix](http://jack.minardi.org/images/project-banners/gh-display.png)
 
 Collection of Arduino and Electric Imp code that powered my realtime github activity display
 
